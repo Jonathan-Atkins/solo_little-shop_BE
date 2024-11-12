@@ -2,7 +2,7 @@ class Api::V1::Merchants::CouponsController < ApplicationController
   before_action :set_merchant
 
   def show
-    coupon = @merchant.coupons.find(params[:id])
+    coupon = @merchant.coupons.find_by(id: params[:id])
     if coupon
       render json: CouponSerializer.new(coupon)
     else
@@ -12,7 +12,15 @@ class Api::V1::Merchants::CouponsController < ApplicationController
 
   def index
     coupons = @merchant.coupons
-    if coupons.empty?
+    if params[:active].present?
+      if params[:active] == 'true'
+        coupons = coupons.where(active: 1)
+        elsif params[:active] == 'false'
+          coupons = coupons.where(active: 0)
+    end
+  end
+    
+  if coupons.empty?
       render json: { error: "Coupons not found" }, status: :not_found
     else
       render json: CouponSerializer.new(coupons)
@@ -30,7 +38,10 @@ class Api::V1::Merchants::CouponsController < ApplicationController
 
   def update
     coupon = @merchant.coupons.find(params[:id])
-    if coupon.eligible?(params[:deactivate])
+    if coupon.de_eligible?(params[:deactivate])
+      coupon.update!(active: 0)
+      render json: CouponSerializer.new(coupon)
+    elsif coupon.eligible?(params[:deactivate])
       coupon.update!(active: 1)
       render json: CouponSerializer.new(coupon)
     else

@@ -61,6 +61,18 @@ RSpec.describe "Merchant Coupon Endpoint", type: :request do
       expect(coupon[:type]).to eq("coupon")
       expect(coupon[:attributes][:active]).to eq('inactive')
     end
+
+    it "can activate a coupon" do
+      merchant1 = create(:merchant)
+      coupon1   = create(:coupon, active: 1, merchant: merchant1)
+
+      patch "/api/v1/merchants/#{merchant1.id}/coupons/#{coupon1.id}", params: { deactivate: false }
+
+      coupon  = JSON.parse(response.body, symbolize_names: true)[:data]
+      expect(response).to be_successful
+      expect(coupon[:type]).to eq("coupon")
+      expect(coupon[:attributes][:active]).to eq('active')
+    end
   end
   
   describe "Sad Paths" do
@@ -102,6 +114,22 @@ RSpec.describe "Merchant Coupon Endpoint", type: :request do
 
     expect(response.status).to eq(404)
     expect(json[:error]).to eq("Coupons not found")
+    end
+  end
+
+  describe "Querying through paths" do
+    it 'returns only active coupons when queried true'do
+      merchant        = create(:merchant)
+      active_coupon   = create(:coupon, merchant: merchant, active: 1)
+      inactive_coupon = create(:coupon, merchant: merchant, active: 0)
+      
+      get "/api/v1/merchants/#{merchant.id}/coupons", params: { active: 'true' }
+
+      coupons = JSON.parse(response.body, symbolize_names: true)[:data]
+
+      expect(response).to be_successful
+      expect(coupons.size).to eq(1)
+      expect(coupons.first[:id]).to eq(active_coupon.id.to_s)
     end
   end
 end
