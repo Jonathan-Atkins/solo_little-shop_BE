@@ -6,6 +6,7 @@ class Api::V1::Merchants::InvoicesController < ApplicationController
     else
       invoices = merchant.invoices
     end
+    invoice_data = Invoice.format_invoices(invoices)
     render json: InvoiceSerializer.new(invoices)
   end
 end

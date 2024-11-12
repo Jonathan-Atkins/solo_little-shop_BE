@@ -8,7 +8,7 @@ class CreateCoupons < ActiveRecord::Migration[7.1]
       t.integer :redemptions_count, default: 0, null: false  
       t.references :merchant, null: false, foreign_key: true
 
-      t.timestamps
+      t.timestamps     
     end
   end
 end
