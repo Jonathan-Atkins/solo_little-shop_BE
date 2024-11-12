@@ -3,6 +3,7 @@ FactoryBot.define do
     name { Faker::Name.first_name }
     code { Faker::Code.asin }
     value { Faker::Number.decimal(l_digits: 2) }
+    active { 0 }
     merchant
 
     trait :bogo50 do

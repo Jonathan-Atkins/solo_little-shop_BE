@@ -12,4 +12,15 @@ class ErrorSerializer
       errors: ["invalid search params"] 
     }
   end
+
+  def self.format_error(exception)
+    {
+      message: "your request could not be completed",
+      errors: [
+        {
+          error: exception.message
+        }
+      ]
+    }
+  end
 end
