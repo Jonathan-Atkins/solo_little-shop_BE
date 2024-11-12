@@ -59,28 +59,30 @@ RSpec.describe "Merchant invoices endpoints" do
     expect(json[:errors].first).to eq("Couldn't find Merchant with 'id'=100000")
   end
 
-  it "returns a merchant's invoices including the coupon id if one was used" do
-    coupon1 = Coupon.create!(name: "DISCOUNT10", code: "DISC10", value: 10, merchant: @merchant1)
-    coupon2 = Coupon.create!(name: "DISCOUNT20", code: "DISC20", value: 20, merchant: @merchant1)
+  it "returns a merchants invoices, including the coupon id if one was used" do
+    merchant3 = Merchant.create!(name: "Amazon")
+    coupon1 = Coupon.create!(name: "DISCOUNT10", code: "DISC10", value: 10, merchant: merchant3)
+    coupon2 = Coupon.create!(name: "DISCOUNT20", code: "DISC20", value: 20, merchant: merchant3)
     
-    invoice_with_coupon1 = Invoice.create!(customer: @customer1, merchant: @merchant1, status: "shipped", coupon: coupon1)
-    invoice_with_coupon2 = Invoice.create!(customer: @customer2, merchant: @merchant1, status: "shipped", coupon: coupon2)
-    invoice_without_coupon = Invoice.create!(customer: @customer2, merchant: @merchant1, status: "shipped")
+    
+    invoice_with_coupon1 = Invoice.create!(customer: @customer1, merchant: merchant3, status: "shipped", coupon: coupon1)
+    invoice_with_coupon2 = Invoice.create!(customer: @customer2, merchant: merchant3, status: "shipped", coupon: coupon2)
+    invoice_without_coupon = Invoice.create!(customer: @customer2, merchant: merchant3, status: "shipped")
   
-    get "/api/v1/merchants/#{@merchant1.id}/invoices"
+    get "/api/v1/merchants/#{merchant3.id}/invoices"
   
     invoices = JSON.parse(response.body, symbolize_names: true)[:data]
-  
+
     expect(response).to be_successful
-    expect(invoices.count).to eq(7)
-  
-    invoice_data = invoices.find { |invoice| invoice[:id] == invoice_with_coupon1.id.to_s }
+    expect(invoices.count).to eq(3)
+
+    invoice_data = invoices.first
     expect(invoice_data[:attributes][:coupon_id]).to eq(coupon1.id)
-  
-    invoice_data = invoices.find { |invoice| invoice[:id] == invoice_with_coupon2.id.to_s }
+
+    invoice_data = invoices.second
     expect(invoice_data[:attributes][:coupon_id]).to eq(coupon2.id)
   
-    invoice_data = invoices.find { |invoice| invoice[:id] == invoice_without_coupon.id.to_s }
+    invoice_data = invoices.third
     expect(invoice_data[:attributes][:coupon_id]).to be_nil
   end
 end

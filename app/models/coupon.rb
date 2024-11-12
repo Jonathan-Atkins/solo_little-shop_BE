@@ -18,7 +18,7 @@ class Coupon < ApplicationRecord
   end
 
   def eligible?(activate)
-    self.merchant.coupons.where(active: :active).count <= 5 && activate == 'false'   
+    self.merchant.coupons.where(active: :active).count < 5 && activate == 'false'   
   end
 
   def usage_count
