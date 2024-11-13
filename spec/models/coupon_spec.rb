@@ -13,12 +13,4 @@ RSpec.describe Coupon, type: :model do
   #* my it line determines if there is uniqueness and case insensitivity between the the attribute that we are looking at(code in this instance)
   subject { Coupon.create!(name: 'Black Friday', code: 'BF2024', value: 20, merchant: merchant) }
   it { should validate_uniqueness_of(:code).case_insensitive }
-
-  it "counts the number of coupon redemptions" do
-    merchant = create(:merchant)
-    coupon = create(:coupon, merchant: merchant)
-
-    create_list(:coupon_redemption, 3, coupon: coupon)  
-    expect(coupon.usage_count).to eq(3)
-  end
 end

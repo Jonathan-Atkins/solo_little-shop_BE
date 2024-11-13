@@ -1,16 +1,14 @@
 class Api::V1::MerchantsController < ApplicationController
 
   def index
-    merchants = Merchant.all
-
     if params[:sorted].present? && params[:sorted] == "age"
-      merchants = merchants.sorted_by_creation
+      merchants = Merchant.sorted_by_creation
     elsif params[:status].present?
       merchants = Merchant.filter_by_status(params[:status])
+    else 
+      merchants = Merchant.all
     end
-
-    include_count = params[:count].present? && params[:count] == "true"
-    render json: MerchantSerializer.new(merchants, { params: { count: include_count }})
+    render json: MerchantSerializer.new(merchants)
   end
 
   def show

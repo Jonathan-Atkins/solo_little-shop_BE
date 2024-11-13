@@ -75,6 +75,36 @@ describe "Merchant endpoints", :type => :request do
       expect(json[:data][1][:attributes][:item_count]).to eq(2)
       expect(json[:data][2][:attributes][:item_count]).to eq(7)
     end
+
+    it "should return merchants index endpoint with count of coupons for each merchant and count of invoices with used coupons" do
+      merchant1 = Merchant.create!(name: "BigLots")
+      merchant2 = Merchant.create!(name: "K-Mart")
+
+      customer1 = Customer.create!(first_name: "Papa", last_name: "Gino")
+      customer2 = Customer.create!(first_name: "Jimmy", last_name: "John")
+
+      coupon1 = Coupon.create!(name: "DISCOUNT10", code: "DISC10", value: 10, merchant: merchant1)
+      coupon2 = Coupon.create!(name: "DISCOUNT20", code: "DISC20", value: 20, merchant: merchant2)
+      coupon3 = Coupon.create!(name: "DISCOUNT50", code: "DISC50", value: 50, merchant: merchant2)
+      
+      invoice_with_coupon1 = Invoice.create!(customer: customer1, merchant: merchant1, status: "shipped", coupon: coupon1)
+      invoice_with_coupon2 = Invoice.create!(customer: customer2, merchant: merchant2, status: "shipped", coupon: coupon2)
+      invoice_without_coupon = Invoice.create!(customer: customer2, merchant: merchant2, status: "shipped")
+
+      get "/api/v1/merchants"
+
+      expect(response).to be_successful
+      merchants = JSON.parse(response.body, symbolize_names: true)[:data]
+      merchant  = merchants.first
+      expect(merchant[:id]).to be_a(String)
+      expect(merchant[:type]).to eq('merchant')
+
+      attrs = merchant[:attributes]
+
+      expect(attrs[:name]).to be_a(String)
+      expect(attrs[:coupons_count]).to be_a(Integer)
+      expect(attrs[:invoice_coupon_count]).to be_a(Integer)  
+    end
   end
 
   describe "get a merchant by id" do
